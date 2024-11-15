@@ -1,0 +1,44 @@
+### Registrar
+POST http://localhost:5000/customer/register
+Content-Type: application/json
+
+{
+  "username":"omars",
+  "password":"12345"
+}
+
+### LogIn
+POST http://localhost:5000/customer/login
+Content-Type: application/json
+
+{
+  "username":"omars",
+  "password":"12345"
+}
+
+### Review post
+PUT http://localhost:5000/customer/auth/review/1
+Content-Type: application/json
+
+{
+  "review":"this book is cool"
+}
+
+### Delete a review
+DELETE http://localhost:5000/customer/auth/review/1
+
+### get books
+GET http://localhost:5000
+
+### get book bi isbn
+GET http://localhost:5000/isbn/1
+
+### get book by author
+GET http://localhost:5000/author/Chinua Achebe
+
+### get book by title
+GET http://localhost:5000/title/Things Fall Apart
+
+### get reviews by isbn 
+GET http://localhost:5000/review/1
+

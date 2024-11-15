@@ -22,19 +22,17 @@ const authenticatedUser = (username,password)=>{ //returns boolean
        
     }
     return false;
-    
-
 }
 
 regd_users.post("/register", (req,res) => {
     //Write your code here
     const username = req.body.username;
-    const password = req.body.password;
+    const password = req.body.password
     if(username&&password){
         const present = users.filter((user)=> user.username === username)
         if(present.length===0){
-            users.push({"username":req.body.username,"password":req.body.password});
-            return res.status(201).json({message:"USer Created successfully"})
+            users.push({"username":username,"password":password});
+            return res.status(201).json({message:"User Created successfully"})
         }
         else{
           return res.status(400).json({message:"Already exists"})
@@ -46,26 +44,32 @@ regd_users.post("/register", (req,res) => {
     else if(!username || !password){
       return res.status(400).json({message:"Check username and password"})
     }
-  
-   
   });
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
-    let user = req.body.username;
-    let pass = req.body.password;
-    if(!authenticatedUser(user,pass)){
-        return res.status(403).json({message:"User not authenticated"})
+regd_users.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Validation
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username and password required" });
+  }
+
+  if (!authenticatedUser(username, password)) {
+    return res.status(401).json({ message: "User not authenticated" });
+  }
+
+  const accessToken = jwt.sign({ username }, 'access', { expiresIn: '12h' }, (err, token) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
 
-    let accessToken = jwt.sign({
-        data: user
-    },'access',{expiresIn:60*60})
-    req.session.authorization = {
-        accessToken
-    }
-    res.send("User logged in Successfully")
- 
+    req.session.accessToken = token; // Save token to session
+    req.session.username = username; // Save username to session (optional)
+
+    return res.status(200).json({ accessToken: token });
+  });
 });
 
 // Add a book review
@@ -73,11 +77,12 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
   let userd = req.session.username;
   let ISBN = req.params.isbn;
-  let details = req.query.review;
+  let details = req.body.review;
   let rev = {user:userd,review:details}
   books[ISBN].reviews = rev;
-  return res.status(201).json({message:"Review added successfully"})
-  
+  return res.status(201).json({message:"Review added successfully",
+    review: rev
+  })
 });
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
